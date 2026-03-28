@@ -1,7 +1,13 @@
-# dns-lookup
-DNS record lookup (raw UDP + system resolver). Zero dependencies.
+# dns_lookup
+
+DNS lookup tool — A, AAAA, MX, NS, TXT records via socket
+
 ## Usage
+
 ```bash
-python3 dns_lookup.py google.com
-python3 dns_lookup.py example.com 1.1.1.1
+python3 dns_lookup.py --help
 ```
+
+## License
+
+MIT
