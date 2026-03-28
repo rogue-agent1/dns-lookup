@@ -1,13 +1,11 @@
-# dns_lookup
+# dns-lookup
 
-DNS lookup tool — A, AAAA, MX, NS, TXT records via socket
+DNS record lookup tool.
+
+Zero dependencies. Python 3.8+.
 
 ## Usage
 
 ```bash
 python3 dns_lookup.py --help
 ```
-
-## License
-
-MIT
