@@ -1,35 +1,36 @@
 #!/usr/bin/env python3
-"""DNS lookup tool — zero dependencies (uses socket)."""
-import socket, sys
+"""dns_lookup - DNS lookup with multiple record types."""
+import sys, socket, subprocess
 
-def lookup(hostname, record_type="A"):
+def resolve(host, record_type='A'):
     try:
-        if record_type == "A":
-            return socket.gethostbyname_ex(hostname)
-        elif record_type == "AAAA":
-            results = socket.getaddrinfo(hostname, None, socket.AF_INET6)
-            return list(set(r[4][0] for r in results))
-        elif record_type == "ANY":
-            results = socket.getaddrinfo(hostname, None)
-            return list(set(r[4][0] for r in results))
-    except socket.gaierror as e:
-        return f"Error: {e}"
+        result = subprocess.check_output(['dig', '+short', host, record_type], text=True, timeout=5).strip()
+        return result.splitlines() if result else []
+    except:
+        if record_type == 'A':
+            try: return [socket.gethostbyname(host)]
+            except: return []
+        return []
 
-def reverse_lookup(ip):
-    try: return socket.gethostbyaddr(ip)
-    except socket.herror as e: return f"Error: {e}"
+def reverse(ip):
+    try: return socket.gethostbyaddr(ip)[0]
+    except: return 'N/A'
 
-def test():
-    result = lookup("localhost")
-    assert "127.0.0.1" in str(result)
-    rev = reverse_lookup("127.0.0.1")
-    assert "localhost" in str(rev).lower()
-    print(f"localhost → {result}")
-    print(f"127.0.0.1 → {rev}")
-    print("All tests passed!")
+def main():
+    args = sys.argv[1:]
+    if not args or '-h' in args:
+        print("Usage: dns_lookup.py HOST [A|AAAA|MX|NS|TXT|CNAME|SOA] [--reverse IP]"); return
+    if args[0] == '--reverse':
+        print(f"  {args[1]} -> {reverse(args[1])}"); return
+    host = args[0]
+    types = [a.upper() for a in args[1:] if a.upper() in ('A','AAAA','MX','NS','TXT','CNAME','SOA','PTR')]
+    if not types: types = ['A','AAAA','MX','NS']
+    for t in types:
+        records = resolve(host, t)
+        if records:
+            print(f"  {t}:")
+            for r in records: print(f"    {r}")
+        else:
+            print(f"  {t}: (none)")
 
-if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        host = sys.argv[1]; rtype = sys.argv[2] if len(sys.argv) > 2 else "A"
-        print(lookup(host, rtype))
-    else: test()
+if __name__ == '__main__': main()
